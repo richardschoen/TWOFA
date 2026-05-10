@@ -13,8 +13,10 @@ For IBM i OS V7R2 above.
                   MAXADJ(1)
                   ADJTHLD(*MAXADJ) 
                   ACTLOG(*POLL)
+    
     End NTP service:
           ENDTCPSVR SERVER(*NTP)
+    
     Start NTP service     
           STRTCPSVR SERVER(*NTP)</pre>
 + Create library file - CRTLIB TWOFA
