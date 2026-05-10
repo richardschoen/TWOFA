@@ -17,6 +17,6 @@ TWOFA - A 2FA Two-Factor Authentication solution 100% native to the IBM i
 
 + Reference:
   - https://gist.github.com/syzdek/eba233ca33e1b5a45a99
-  - https://www.midlandinfosys.com/ibm-i-2fa-two-factor-authentication-faq
+
   
   
