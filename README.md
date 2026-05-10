@@ -8,7 +8,7 @@ TWOFA - A 2FA Two-Factor Authentication solution 100% native to the IBM i
 + Compile source member INSTALL2FA - CRTCLPGM PGM(TWOFA/INSTALL2FA) SRCFILE(TWOFA/TWOFA) SRCMBR(INSTALL2FA)
 + Create all programs, commands, signon display file, physical file and subsystem TWOFA - Call TWOFA/INSTALL2FA
 + Usage:
-  - Add 2FA user<br> excute command TWOFASET USER(2fauser) <br> Default only add or replace TOTP key to user, no workstation name limit control. If you want limit user and workstation at th same time, Use SQL to update workstation name after add 2FA user.
+  - Add 2FA user<br> excute command TWOFASET USER(2fauser) <br> Default only add or replace TOTP key to user, no workstation name limit control.<br> If you want limit user and workstation at th same time, Use SQL to update workstation name after add 2FA user.<br> Reference PF TWOFAPF for field description.
   - Remove 2FA user<br> excute command TWOFASET USER(2fauser) REMOVE(*YES)
   - Default only limit workstation device name TWOFA for demo usage. You can use command ADDWSE to add other workstation (for example TWOFA*) to subsystem TWOFA.<br>And those subsystem workstation name need to be same as Client workstation name on 5250 Emulator setting. <br>
   
