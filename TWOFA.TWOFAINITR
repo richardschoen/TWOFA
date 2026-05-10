@@ -1,0 +1,53 @@
+     H DEBUG  OPTION(*SRCSTMT:*NODEBUGIO) DFTACTGRP(*NO) ACTGRP(*CALLER)
+     FTWOFAPF   UF A E           K DIsk    ExtFile('TWOFA/TWOFAPF')
+
+     DMYPSDS          SDS
+     D JOB_NAME              244    253                                         * Job name
+     D WSID                  244    253                                           Workstation ID
+     D USER                  254    263                                         * User name
+     D JOB_NUM               264    269S 0                                      * Job number
+     D JOB_NUMA                       6A   overlay(JOB_NUM)                     * Job number, alpha
+
+     C     *Entry        Plist
+     C                   Parm                    Action           10
+     C                   Parm                    UsrPrf           10
+     C                   Parm                    SecretKey        32
+     C                   Parm                    WrkStn           10
+     C                   Parm                    Check             1
+     C                   Parm                    LmtWrkStn         1
+     C
+     C                   Eval      *InLr = *On
+
+     C     TwoFAKey      KList
+     C                   Kfld                    UsrPrf
+
+     C                   Select
+     C                   When      Action = '*GETKEY'
+     C     twoFAKey      Chain(e)  TWOFAPF
+     C                   If        not %error
+     C                   If        Check <> 'Y'
+     C                   Eval      Check = 'N'
+     C                   Else
+     C                   Eval      SecretKey = Secret
+     C                   EndIf
+     C                   Else
+     C                   Eval      Check = 'N'
+     C                   EndIf
+     C                   When      Action = '*PUTKEY'
+     C     twoFAKey      Chain(e)  TWOFAPF
+     C                   If        not %found
+     C                   Eval      Secret = SecretKey
+     C                   Eval      WrkStn = ' '
+     C                   Eval      Check  = 'Y'
+     C                   Eval      LmtWrkStn = 'N'
+     C                   Write     TWOFAR
+     C                   Else
+     C                   Eval      Secret = SecretKey
+     C                   Update    TWOFAR
+     C                   EndIf
+     C                   When      Action = '*DLTUSR'
+     C     twoFAKey      Chain(e)  TWOFAPF
+     C                   If        %found
+     C                   Delete    TWOFAR
+     C                   EndIf
+     C                   EndSl

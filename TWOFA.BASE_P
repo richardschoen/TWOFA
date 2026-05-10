@@ -1,0 +1,67 @@
+      /IF DEFINED(BASE_P)
+      /EOF
+      /ENDIF
+      /DEFINE BASE_P
+
+     D base64_encode   pr            10u 0 extproc('base64_encode')
+     D   plainptr                      *   value
+     D   plainlen                    10u 0 value
+     D   base64ptr                     *   value
+     D   base64size                  10u 0 value
+
+     D base64_decode   pr            10U 0 extproc('base64_decode')
+     D   base64ptr                     *   value
+     D   base64len                   10u 0 value
+     D   plainptr                      *   value
+     D   plainsize                   10u 0 value
+
+     D base64_encode_len...
+     D                 pr            10u 0 extproc('base64_encode_len')
+     D   plainlen                    10u 0 value
+
+     D base64_decode_len...
+     D                 pr            10u 0 extproc('base64_decode_len')
+     D   base64ptr                     *   value
+     D   base64len                   10u 0 value
+
+     D base32_encode   pr            10u 0 extproc('base32_encode')
+     D   plainptr                      *   value
+     D   plainlen                    10u 0 value
+     D   base32ptr                     *   value
+     D   base32size                  10u 0 value
+
+     D base32_decode   pr            10U 0 extproc('base32_decode')
+     D   base32ptr                     *   value
+     D   base32len                   10u 0 value
+     D   plainptr                      *   value
+     D   plainsize                   10u 0 value
+
+     D base32_encode_len...
+     D                 pr            10u 0 extproc('base32_encode_len')
+     D   plainlen                    10u 0 value
+
+     D base32_decode_len...
+     D                 pr            10u 0 extproc('base32_decode_len')
+     D   base32ptr                     *   value
+     D   base32len                   10u 0 value
+
+     D base16_encode   pr            10u 0 extproc('base16_encode')
+     D   plainptr                      *   value
+     D   plainlen                    10u 0 value
+     D   base16ptr                     *   value
+     D   base16size                  10u 0 value
+
+     D base16_decode   pr            10U 0 extproc('base16_decode')
+     D   base16ptr                     *   value
+     D   base16len                   10u 0 value
+     D   plainptr                      *   value
+     D   plainsize                   10u 0 value
+
+     D base16_encode_len...
+     D                 pr            10u 0 extproc('base16_encode_len')
+     D   plainlen                    10u 0 value
+
+     D base16_decode_len...
+     D                 pr            10u 0 extproc('base16_decode_len')
+     D   base16ptr                     *   value
+     D   base16len                   10u 0 value

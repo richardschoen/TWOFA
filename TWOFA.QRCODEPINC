@@ -1,0 +1,33 @@
+PGM (&user &email &secret)
+
+    dcl     &user       *CHAR       10
+    dcl     &secret     *CHAR       32
+    dcl     &company    *CHAR       52
+    dcl     &issuer     *CHAR       52
+    dcl     &email      *CHAR       52
+
+    dcl     &Path       *CHAR      100
+
+    RtvDtaAra  (TWOFA/twofa ( 1 52)) (&company)
+    RtvDtaAra  (TWOFA/twofa (61 52)) (&issuer )
+
+    md ('/home/twofauser')
+    MONMSG MSGID(CPFA0A0)
+    ChgVar        &Path      ('/home/twofauser/' *cat &user *Tcat +
+                              '.pdf')
+    RMVLNK OBJLNK(&PATH)
+    MONMSG MSGID(CPFA0A9)
+
+    OVRPRTF FILE(QRCODEPRTF) +
+                DEVTYPE(*AFPDS) +
+                TOSTMF(&PATH) +
+                WSCST(*PDF) +
+                OVRSCOPE(*CALLLVL)
+
+    Call   QRCODEPINR  ( &company    +
+                         &email      +
+                         &secret     +
+                         &issuer     +
+                       )
+
+ENDPGM

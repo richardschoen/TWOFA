@@ -1,0 +1,10 @@
+     A                                      UNIQUE
+     A          R TWOFAR
+     A            USRPRF        10
+     A            SECRET        32
+     A            WRKSTN        10
+      * CHECK Y N
+     A            CHECK          1
+      * LIMIT Y N
+     A            LMTWRKSTN      1
+     A          K USRPRF

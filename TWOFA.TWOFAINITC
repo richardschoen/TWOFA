@@ -1,0 +1,67 @@
+PGM
+
+    Dcl        &UsrPrf        *Char    10
+    Dcl        &Secret        *Char    32
+    Dcl        &Check         *Char     1
+    Dcl        &Pin           *Char     6
+    Dcl        &WrkStn        *Char    10
+    Dcl        &CurWrkStn     *Char    10
+    Dcl        &LmtWrkStn     *Char     1
+    Dcl        &TwofaLib      *Char    10    'TWOFA'
+    Dcl        &Pass          *Char     1
+
+    Dcl        &MsgDta        *CHAR   260
+    Dcl        &MsgId         *CHAR     7
+    Dcl        &UserDta       *CHAR   128    ' '
+
+    AddLibLe   &TwoFaLib
+    Monmsg     Cpf0000
+
+/*                                                                 */
+/* RECEIVE THE CPF1124 MESSAGE TO OBTAIN THE USER PORTION OF THE   */
+/* SIGN-ON DISPLAY.                                                */
+/*                                                                 */
+    RcvMsg Pgmq(*EXT) Rmv(*NO) MsgDta(&MsgDta) MsgId(&MsgId)
+    If ( &MsgId *EQ 'CPF1124' ) Do
+    ChgVar &UserDta        %SST(&MsgDta 133 6)
+    ChgVar &Pin            %SST(&MsgDta 133 6)
+    EndDo
+
+    RtvJobA    Job(&CurWrkStn)       +
+               User(&UsrPrf)
+
+    Call       TwoFaINITR   ( '*GETKEY'          +
+                              &UsrPrf            +
+                              &Secret            +
+                              &WrkStn            +
+                              &Check             +
+                              &LmtWrkStn )
+
+    If       ( &Check     *EQ 'N' )  Goto End
+
+    If       ( &LmtWrkStn *EQ 'Y' *And           +
+               &WrkStn    *NE &CurWrkStn )  Do
+    SndPgmMsg  MsgId(CPF9898) MsgF(QCPFMSG)              +
+               MsgDta( &UsrPrf *Bcat 'signon wrong work station' ) +
+               ToMsgq(*SYSOPR)
+    SignOff
+    EndDo
+
+    Base32Otp  Action(*VERIFYPIN) +
+               Secret(&SECRET)    +
+               Pin(&Pin)          +
+               Pass(&PASS)
+
+    If       ( &PASS *NE '1' ) Do
+    SndPgmMsg  MsgId(CPF9898) MsgF(QCPFMSG)              +
+               MsgDta( 'User' *Bcat &UsrPrf *Bcat 'input wrong Pin' ) +
+               ToMsgq(*SYSOPR)
+    SignOff
+   EndDo
+
+End:
+    RmvLibLe   TWOFA
+    Monmsg     CPF0000
+
+    Return
+ENDPGM

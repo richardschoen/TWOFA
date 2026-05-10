@@ -1,0 +1,686 @@
+     H NOMAIN
+      *T: Base64/32/16 encoding functions
+      *=============================================================================================
+
+      /copy twofa,base_p                         ‚Base64/32/16 encoding functions
+
+     D bitform         PR           512A   Extproc('bitform')
+     D   string                      32A   Const
+     D   stringlen                   10I 0 Const
+
+     D charform        PR            32A   Extproc('charform')
+     D   string                     512A   Value
+     D   stringlen                   10I 0 Value
+
+     D Base64Str       S                   Like(BaseArr)
+     D                                     Inz('000000A000001B000010C000011D+
+     D                                          000100E000101F000110G000111H+
+     D                                          001000I001001J001010K001011L+
+     D                                          001100M001101N001110O001111P+
+     D                                          010000Q010001R010010S010011T+
+     D                                          010100U010101V010110W010111X+
+     D                                          011000Y011001Z011010a011011b+
+     D                                          011100c011101d011110e011111f+
+     D                                          100000g100001h100010i100011j+
+     D                                          100100k100101l100110m100111n+
+     D                                          101000o101001p101010q101011r+
+     D                                          101100s101101t101110u101111v+
+     D                                          110000w110001x110010y110011z+
+     D                                          1101000110101111011021101113+
+     D                                          1110004111001511101061110117+
+     D                                          11110081111019111110+111111/')
+     D Base64StrPtr    S               *   Inz(%addr(Base64Str))
+
+     D Base32Str       S                   Like(BaseArr)
+     D                                     Inz('00000 A+
+     D                                          00001 B+
+     D                                          00010 C+
+     D                                          00011 D+
+     D                                          00100 E+
+     D                                          00101 F+
+     D                                          00110 G+
+     D                                          00111 H+
+     D                                          01000 I+
+     D                                          01001 J+
+     D                                          01010 K+
+     D                                          01011 L+
+     D                                          01100 M+
+     D                                          01101 N+
+     D                                          01110 O+
+     D                                          01111 P+
+     D                                          10000 Q+
+     D                                          10001 R+
+     D                                          10010 S+
+     D                                          10011 T+
+     D                                          10100 U+
+     D                                          10101 V+
+     D                                          10110 W+
+     D                                          10111 X+
+     D                                          11000 Y+
+     D                                          11001 Z+
+     D                                          11010 2+
+     D                                          11011 3+
+     D                                          11100 4+
+     D                                          11101 5+
+     D                                          11110 6+
+     D                                          11111 7')
+     D Base32StrPtr    S               *   Inz(%addr(Base32Str))
+
+     D Base16Str       S                   Like(BaseArr)
+     D                                     Inz('0000  0+
+     D                                          0000  1+
+     D                                          0001  2+
+     D                                          0001  3+
+     D                                          0010  4+
+     D                                          0010  5+
+     D                                          0011  6+
+     D                                          0011  7+
+     D                                          0100  8+
+     D                                          0100  9+
+     D                                          0101  A+
+     D                                          0101  B+
+     D                                          0110  C+
+     D                                          0110  D+
+     D                                          0111  E+
+     D                                          0111  F')
+     D Base16StrPtr    S               *   Inz(%addr(Base16Str))
+
+     D BaseArr         DS                  Based(BaseArrPtr)
+     D  Elm                                Dim(64)
+     D   Hex                               Overlay(Elm)
+     D     Hex6                       6A   Overlay(Hex)
+     D     Hex5                       5A   Overlay(Hex)
+     D     Hex4                       4A   Overlay(Hex)
+     D   Char                         1A   Overlay(Elm:*Next)
+
+      *=============================================================================================
+      *‚base64_encode(): Encode plain text string into Base64
+      *
+      *‚Returns the length of the resulting encoded string or a negative
+      *‚number denoting the position of the error within the string
+      *=============================================================================================
+     P base64_encode   B                   export
+     D                 PI            10U 0
+     D   plainptr                      *   value
+     D   plainlen                    10U 0 value
+     D   base64ptr                     *   value
+     D   base64size                  10U 0 value
+      *---------------------------------------------------------------------------------------------
+     D plainstr        S              3A   Based(plainptr)
+
+     D base64bit       DS
+     D   b64b1                        6A
+     D   b64b2                        6A
+     D   b64b3                        6A
+     D   b64b4                        6A
+
+     D base64str       S              4A   based(base64ptr)
+     D base64len       S             10I 0 inz
+     D pos             S             10I 0 inz
+     D len             S             10I 0 inz
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        BaseArrPtr = Base64StrPtr;
+
+        //‚Not enough space to encode string, so truncate
+        if base64_encode_len( plainlen ) > base64size;
+          plainlen = %int( base64size / 4 ) * 3;
+        endif;
+
+        if plainlen > 2;
+          dow pos <= ( plainlen - 3 );
+            base64bit = bitform( plainstr : 3 );
+            base64str = Char( %lookup( b64b1 : Hex6 : 1 : 64 ) ) +
+                        Char( %lookup( b64b2 : Hex6 : 1 : 64 ) ) +
+                        Char( %lookup( b64b3 : Hex6 : 1 : 64 ) ) +
+                        Char( %lookup( b64b4 : Hex6 : 1 : 64 ) );
+            base64ptr = base64ptr + 4;
+            base64len = base64len + 4;
+            plainptr = plainptr + 3;
+            pos = pos + 3;
+          enddo;
+        endif;
+        if plainlen > pos;
+          len = plainlen - pos;
+          base64bit = bitform( plainstr : len );
+          %subst( base64bit : ( len * 8 ) + 1 ) = *all'0';
+          select;
+            when len = 2;
+              base64str = Char( %lookup( b64b1 : Hex6 : 1 : 64 ) ) +
+                          Char( %lookup( b64b2 : Hex6 : 1 : 64 ) ) +
+                          Char( %lookup( b64b3 : Hex6 : 1 : 64 ) ) +
+                          '=';
+            when len = 1;
+              base64str = Char( %lookup( b64b1 : Hex6 : 1 : 64 ) ) +
+                          Char( %lookup( b64b2 : Hex6 : 1 : 64 ) ) +
+                          '==';
+          endsl;
+          base64len = base64len + 4;
+        endif;
+
+        return base64len;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=============================================================================================
+      *‚base64_decode(): Decode plain text string from Base64
+      *
+      *‚Returns the length of the resulting decoded string or a negative
+      *‚number denoting the position of the error within the string
+      *=============================================================================================
+     P base64_decode   B                   export
+     D                 PI            10U 0
+     D   base64ptr                     *   value
+     D   base64len                   10U 0 value
+     D   plainptr                      *   value
+     D   plainsize                   10U 0 value
+      *---------------------------------------------------------------------------------------------
+     D base64str       DS                  based(base64ptr)
+     D   b64c1                        1A
+     D   b64c2                        1A
+     D   b64c3                        1A
+     D   b64c4                        1A
+
+     D plainbit        DS
+     D   bits                         8A   Dim(3)
+
+     D plainstr        S              3A   based(plainptr)
+     D plainlen        S             10I 0
+     D pos             S             10I 0
+     D len             S             10I 0
+     D x               S             10I 0
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        BaseArrPtr = Base64StrPtr;
+
+        //‚Not enough space to decode string, so truncate
+        if base64_decode_len( base64ptr : base64len ) > plainsize;
+          base64len = %int( ( plainsize + 2  ) / 3 ) * 4;
+        endif;
+
+        if base64len > 4;
+          dow pos < ( base64len - 4 );
+            plainbit = Hex6( %lookup( b64c1 : Char : 1 : 64 ) ) +
+                       Hex6( %lookup( b64c2 : Char : 1 : 64 ) ) +
+                       Hex6( %lookup( b64c3 : Char : 1 : 64 ) ) +
+                       Hex6( %lookup( b64c4 : Char : 1 : 64 ) );
+            plainstr = charform( plainbit : 24 );
+            plainptr = plainptr + 3;
+            plainlen = plainlen + 3;
+            base64ptr = base64ptr + 4;
+            pos = pos + 4;
+          enddo;
+          select;
+            when b64c3 = '=';
+              plainbit = Hex6( %lookup( b64c1 : Char : 1 : 64 ) ) +
+                         Hex6( %lookup( b64c2 : Char : 1 : 64 ) ) +
+                         '000000000000';
+              len = 1;
+            when b64c4 = '=';
+              plainbit = Hex6( %lookup( b64c1 : Char : 1 : 64 ) ) +
+                         Hex6( %lookup( b64c2 : Char : 1 : 64 ) ) +
+                         Hex6( %lookup( b64c3 : Char : 1 : 64 ) ) +
+                         '000000';
+              len = 2;
+            other;
+              plainbit = Hex6( %lookup( b64c1 : Char : 1 : 64 ) ) +
+                         Hex6( %lookup( b64c2 : Char : 1 : 64 ) ) +
+                         Hex6( %lookup( b64c3 : Char : 1 : 64 ) ) +
+                         Hex6( %lookup( b64c4 : Char : 1 : 64 ) );
+              len = 3;
+          endsl;
+          for x = 1 to len;
+            plainstr = charform( bits(x) : 8 );
+            plainptr = plainptr + 1;
+            plainlen = plainlen + 1;
+          endfor;
+        endif;
+
+        return plainlen;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=============================================================================================
+      *‚base64_encode_len(): Return length of base64-encoded string
+      *=============================================================================================
+     P base64_encode_len...
+     P                 B                   export
+     D                 PI            10U 0
+     D   plainlen                    10U 0 value
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        return %int( ( plainlen + 2  ) / 3 ) * 4;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=============================================================================================
+      *‚base64_decode_len(): Return length of an unencoded string
+      *=============================================================================================
+     P base64_decode_len...
+     P                 B                   export
+     D                 PI            10U 0
+     D   base64ptr                     *   value
+     D   base64len                   10U 0 value
+      *---------------------------------------------------------------------------------------------
+     D char            S              1A   based(charptr)
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        BaseArrPtr = Base64StrPtr;
+
+        charptr = base64ptr + base64len - 2;
+        if char = '=';
+          return ( ( base64len / 4 ) * 3 ) - 2;
+        else;
+          charptr = charptr + 1;
+          if char = '=';
+            return ( ( base64len / 4 ) * 3 ) - 1;
+          else;
+            return ( base64len / 4 ) * 3;
+          endif;
+        endif;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=============================================================================================
+      *‚base32_encode(): Encode plain text string into Base32
+      *
+      *‚Returns the length of the resulting encoded string or a negative
+      *‚number denoting the position of the error within the string
+      *=============================================================================================
+     P base32_encode   B                   export
+     D                 PI            10U 0
+     D   plainptr                      *   value
+     D   plainlen                    10U 0 value
+     D   base32ptr                     *   value
+     D   base32size                  10U 0 value
+      *---------------------------------------------------------------------------------------------
+     D plainstr        S              5A   Based(plainptr)
+
+     D base32bit       DS
+     D   b32b1                        5A
+     D   b32b2                        5A
+     D   b32b3                        5A
+     D   b32b4                        5A
+     D   b32b5                        5A
+     D   b32b6                        5A
+     D   b32b7                        5A
+     D   b32b8                        5A
+
+     D base32str       S              8A   based(base32ptr)
+     D base32len       S             10I 0 inz
+     D pos             S             10I 0 inz
+     D len             S             10I 0 inz
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        BaseArrPtr = Base32StrPtr;
+
+        //‚Not enough space to encode string, so truncate
+        if base32_encode_len( plainlen ) > base32size;
+          plainlen = %int( base32size / 8 ) * 5;
+        endif;
+
+        if plainlen > 7;
+          dow pos <= ( plainlen - 5 );
+            base32bit = bitform( plainstr : 5 );
+            base32str = Char( %lookup( b32b1 : Hex5 : 1 : 32 ) ) +
+                        Char( %lookup( b32b2 : Hex5 : 1 : 32 ) ) +
+                        Char( %lookup( b32b3 : Hex5 : 1 : 32 ) ) +
+                        Char( %lookup( b32b4 : Hex5 : 1 : 32 ) ) +
+                        Char( %lookup( b32b5 : Hex5 : 1 : 32 ) ) +
+                        Char( %lookup( b32b6 : Hex5 : 1 : 32 ) ) +
+                        Char( %lookup( b32b7 : Hex5 : 1 : 32 ) ) +
+                        Char( %lookup( b32b8 : Hex5 : 1 : 32 ) );
+            base32ptr = base32ptr + 8;
+            base32len = base32len + 8;
+            plainptr = plainptr + 5;
+            pos = pos + 5;
+          enddo;
+        endif;
+        if plainlen > pos;
+          len = plainlen - pos;
+          base32bit = bitform( plainstr : len );
+          %subst( base32bit : ( len * 8 ) + 1 ) = *all'0';
+          select;
+            when len = 1;
+              base32str = Char( %lookup( b32b1 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b2 : Hex5 : 1 : 32 ) ) +
+                          '========';
+            when len = 2;
+              base32str = Char( %lookup( b32b1 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b2 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b3 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b4 : Hex5 : 1 : 32 ) ) +
+                          '====';
+            when len = 3;
+              base32str = Char( %lookup( b32b1 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b2 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b3 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b4 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b5 : Hex5 : 1 : 32 ) ) +
+                          '===';
+            when len = 4;
+              base32str = Char( %lookup( b32b1 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b2 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b3 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b4 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b5 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b6 : Hex5 : 1 : 32 ) ) +
+                          Char( %lookup( b32b7 : Hex5 : 1 : 32 ) ) +
+                          '=';
+          endsl;
+          base32len = base32len + 8;
+        endif;
+
+        return base32len;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=============================================================================================
+      *‚base32_decode(): Decode plain text string from Base32
+      *
+      *‚Returns the length of the resulting decoded string or a negative
+      *‚number denoting the position of the error within the string
+      *=============================================================================================
+     P base32_decode   B                   export
+     D                 PI            10U 0
+     D   base32ptr                     *   value
+     D   base32len                   10U 0 value
+     D   plainptr                      *   value
+     D   plainsize                   10U 0 value
+      *---------------------------------------------------------------------------------------------
+     D base32str       DS                  based(base32ptr)
+     D   b32c1                        1A
+     D   b32c2                        1A
+     D   b32c3                        1A
+     D   b32c4                        1A
+     D   b32c5                        1A
+     D   b32c6                        1A
+     D   b32c7                        1A
+     D   b32c8                        1A
+
+     D plainbit        DS
+     D   bits                         8A   Dim(5)
+
+     D plainstr        S              5A   based(plainptr)
+     D plainlen        S             10I 0
+     D pos             S             10I 0
+     D len             S             10I 0
+     D x               S             10I 0
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        BaseArrPtr = Base32StrPtr;
+
+        //‚Not enough space to decode string, so truncate
+        if base32_decode_len( base32ptr : base32len ) > plainsize;
+          base32len = %int( ( plainsize + 4  ) / 5 ) * 8;
+        endif;
+
+        if base32len > 8;
+          dow pos < ( base32len - 8 );
+            plainbit = Hex5( %lookup( b32c1 : Char : 1 : 32 ) ) +
+                       Hex5( %lookup( b32c2 : Char : 1 : 32 ) ) +
+                       Hex5( %lookup( b32c3 : Char : 1 : 32 ) ) +
+                       Hex5( %lookup( b32c4 : Char : 1 : 32 ) ) +
+                       Hex5( %lookup( b32c5 : Char : 1 : 32 ) ) +
+                       Hex5( %lookup( b32c6 : Char : 1 : 32 ) ) +
+                       Hex5( %lookup( b32c7 : Char : 1 : 32 ) ) +
+                       Hex5( %lookup( b32c8 : Char : 1 : 32 ) );
+            plainstr = charform( plainbit : 40 );
+            plainptr = plainptr + 5;
+            plainlen = plainlen + 5;
+            base32ptr = base32ptr + 8;
+            pos = pos + 8;
+          enddo;
+          select;
+            when b32c3 = '=';
+              plainbit = Hex5( %lookup( b32c1 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c2 : Char : 1 : 32 ) ) +
+                         '000000000000000000000000000000';
+              len = 1;
+            when b32c5 = '=';
+              plainbit = Hex5( %lookup( b32c1 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c2 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c3 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c4 : Char : 1 : 32 ) ) +
+                         '00000000000000000000';
+              len = 2;
+            when b32c6 = '=';
+              plainbit = Hex5( %lookup( b32c1 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c2 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c3 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c4 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c5 : Char : 1 : 32 ) ) +
+                         '0000000000';
+              len = 3;
+            when b32c8 = '=';
+              plainbit = Hex5( %lookup( b32c1 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c2 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c3 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c4 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c5 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c6 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c7 : Char : 1 : 32 ) ) +
+                         '00000';
+              len = 4;
+            other;
+              plainbit = Hex5( %lookup( b32c1 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c2 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c3 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c4 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c5 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c6 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c7 : Char : 1 : 32 ) ) +
+                         Hex5( %lookup( b32c8 : Char : 1 : 32 ) );
+              len = 5;
+          endsl;
+          for x = 1 to len;
+            plainstr = charform( bits(x) : 8 );
+            plainptr = plainptr + 1;
+            plainlen = plainlen + 1;
+          endfor;
+        endif;
+
+        return plainlen;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=============================================================================================
+      *‚base32_encode_len(): Return length of base32-encoded string
+      *=============================================================================================
+     P base32_encode_len...
+     P                 B                   export
+     D                 PI            10U 0
+     D   plainlen                    10U 0 value
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        return %int( ( plainlen + 4  ) / 5 ) * 8;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=============================================================================================
+      *‚base32_decode_len(): Return length of an unencoded string
+      *=============================================================================================
+     P base32_decode_len...
+     P                 B                   export
+     D                 PI            10U 0
+     D   base32ptr                     *   value
+     D   base32len                   10U 0 value
+      *---------------------------------------------------------------------------------------------
+     D char            S              1A   based(charptr)
+      *---------------------------------------------------------------------------------------------
+      /free
+
+        BaseArrPtr = Base32StrPtr;
+
+        charptr = base32ptr + base32len - 6;
+        if char = '=';
+          return ( ( base32len / 8 ) * 5 ) - 6;
+        else;
+          charptr = charptr + 2;
+          if char = '=';
+            return ( ( base32len / 8 ) * 5 ) - 4;
+          else;
+            charptr = charptr + 1;
+            if char = '=';
+              return ( base32len / 8 ) * 5 - 3;
+            else;
+              charptr = charptr + 2;
+              if char = '=';
+                return ( base32len / 8 ) * 5 - 1;
+              else;
+                return ( base32len / 8 ) * 5;
+              endif;
+            endif;
+          endif;
+        endif;
+
+        begsr *pssr;
+          return 0;
+        endsr;
+
+      /end-free
+     P                 E
+      *=====================================================================
+      *‚INTERNAL PROCEDURES
+      *=====================================================================
+      *‚bitform(): Get bit pattern of a character string
+      *=====================================================================
+     P bitform         B
+     D                 PI           512A
+     D String                        32A   Const
+     D StringLen                     10I 0 Const
+      *---------------------------------------------------------------------
+     D Pos             S             10I 0 Inz(1)
+     D Char            S              1A   Inz
+     D RtnVal          S            512A   Inz
+     D SavInd          S              8A   Inz
+     D WrkInd          S              8A   Inz
+      *---------------------------------------------------------------------
+
+      *‚Save existing indicators 50 - 57.
+
+     C                   Movea     *IN(50)       SavInd
+
+     C     1             Do        StringLen     Pos
+
+     C                   Eval      Char = %subst( String : Pos : 1 )
+
+     C                   Testb     '0'           Char                     50    (on)
+     C                   Testb     '1'           Char                     51    (on)
+     C                   Testb     '2'           Char                     52    (on)
+     C                   Testb     '3'           Char                     53    (on)
+     C                   Testb     '4'           Char                     54    (on)
+     C                   Testb     '5'           Char                     55    (on)
+     C                   Testb     '6'           Char                     56    (on)
+     C                   Testb     '7'           Char                     57    (on)
+
+      *‚Update return value
+
+     C                   Movea     *IN(50)       WrkInd
+     C                   Eval      %subst( RtnVal : (Pos * 8) - 7 ) = WrkInd
+
+     C                   Enddo
+
+      *‚Set up return value, reset original indicators 50 - 57 and return.
+
+     C                   Movea     SavInd        *IN(50)
+     C                   Return    RtnVal
+
+     C     *PSSR         Begsr
+     C                   Movea     SavInd        *IN(50)
+     C                   Return    *All'0'
+     C                   Endsr
+
+     P                 E
+      *=====================================================================
+      *‚charform(): Get character string of a bit pattern
+      *=====================================================================
+     P charform        B
+     D                 PI            32A
+     D   string                     512A   Value
+     D   stringlen                   10I 0 Value
+      *---------------------------------------------------------------------
+     D Pos             S             10I 0 Inz(1)
+     D Char            S              1A   Inz
+     D RtnVal          S             32A   Inz Varying
+     D Bits            S              1A   Dim(8) Based(BitsPtr)
+      *---------------------------------------------------------------------
+
+     C                   Dow       Pos < StringLen
+
+     C                   Eval      BitsPtr = %addr( String ) + Pos - 1
+
+     C                   Eval      Char = x'00'
+     C     Bits(1)       Ifeq      '1'
+     C                   Biton     '0'           Char
+     C                   Endif
+     C     Bits(2)       Ifeq      '1'
+     C                   Biton     '1'           Char
+     C                   Endif
+     C     Bits(3)       Ifeq      '1'
+     C                   Biton     '2'           Char
+     C                   Endif
+     C     Bits(4)       Ifeq      '1'
+     C                   Biton     '3'           Char
+     C                   Endif
+     C     Bits(5)       Ifeq      '1'
+     C                   Biton     '4'           Char
+     C                   Endif
+     C     Bits(6)       Ifeq      '1'
+     C                   Biton     '5'           Char
+     C                   Endif
+     C     Bits(7)       Ifeq      '1'
+     C                   Biton     '6'           Char
+     C                   Endif
+     C     Bits(8)       Ifeq      '1'
+     C                   Biton     '7'           Char
+     C                   Endif
+
+     C                   Eval      RtnVal = RtnVal + Char
+     C                   Eval      Pos = Pos + 8
+
+     C                   Enddo
+
+     C                   Return    RtnVal
+
+     C     *PSSR         Begsr
+     C                   Return    *Blanks
+     C                   Endsr
+
+     P                 E
+      *=====================================================================

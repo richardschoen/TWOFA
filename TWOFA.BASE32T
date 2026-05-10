@@ -1,0 +1,30 @@
+     H DEBUG  OPTION(*SRCSTMT:*NODEBUGIO)
+
+      /copy qrpglesrc,base_p                     ‚Base64/32/16 encoding functions
+
+     D translate       PR                  ExtPgm('QDCXLATE')
+     D   length                       5P 0 const
+     D   data                     32766A   options(*varsize)
+     D   table                       10A   const
+
+     D OtpSecret       S             32
+     D OtpSecretLen    S             10U 0
+     D KeyBin          S             32
+     D KeyBinSize      S             10U 0 Inz(%Size(KeyBin))
+     D KeyBinLen       S             10U 0
+
+     D
+
+      /FREE
+
+       OtpSecret    = 'LHUHHIORHIPNXBLXLDMJDAD7FNJQHSGX';
+       OtpSecretLen = %Size(OtpSecret);
+
+       KeyBinLen = base32_decode( %Addr(OtpSecret) :
+                                  OtpSecretLen     :
+                                  %Addr(KeyBin)    :
+                                  KeyBinSize       );
+       dump;
+       *InLr = *On;
+
+      /end-free

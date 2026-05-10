@@ -1,0 +1,15 @@
+             Cmd        Prompt('Set 2FA user secret key')
+
+             Parm       Kwd(USER)                            +
+                        Type(*CHAR)                          +
+                        Len(10)                              +
+                        Min(1)                               +
+                        Prompt('2FA User')
+
+             Parm       Kwd(REMOVE)                          +
+                        Type(*CHAR)                          +
+                        Len( 4)                              +
+                        Rstd(*YES)                           +
+                        Dft(*NO)                             +
+                        Spcval((*YES) (*NO))                 +
+                        Prompt('Remove 2FA user')

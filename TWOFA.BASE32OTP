@@ -1,0 +1,74 @@
+/*-------------------------------------------------------------------*/
+/*                                                                   */
+/*  Command . . : BASE32OTP                                          */
+/*  Description : Generate One Time Password base32 secret or        */
+/*                Verify   Pin                                       */
+/*  Author  . . : Vengoal Chang                                      */
+/*  Published . : AS400ePaper                                        */
+/*  Date  . . . : December 28, 2022                                  */
+/*                                                                   */
+/*                                                                   */
+/*  Programmer's notes:                                              */
+/*                                                                   */
+/*                                                                   */
+/*  Compile options:                                                 */
+/*                                                                   */
+/*    CrtCmd Cmd( BASE32OTP )                                        */
+/*           Pgm( BASE32OTPC )                                       */
+/*           SrcFile( your-src-file )                                */
+/*           SrcMbr( BASE32OTPC )                                    */
+/*                                                                   */
+/*-------------------------------------------------------------------*/
+             Cmd        Prompt( 'Base 32 OTP Secret Gen and Vfy' )
+
+             Parm       Kwd(Action)                    +
+                        Type(*Char)                    +
+                        Len(10)                        +
+                        Rstd(*Yes)                     +
+                        Values(*GenSecret *VerifyPin)  +
+                        Min(1)                         +
+                        Prompt('Action')
+
+             Parm       Kwd(SecretRtn)                 +
+                        Type(*Char)                    +
+                        Len(32)                        +
+                        RtnVal(*Yes)                   +
+                        PmtCtl(P0001)                  +
+                        Prompt('CL var for SecretRtn    (32)')
+
+             Parm       Kwd(Secret)                    +
+                        Type(*Char)                    +
+                        Len(32)                        +
+                        PmtCtl(P0002)                  +
+                        Prompt('Secret to verify')
+
+             Parm       Kwd(Pin)                       +
+                        Type(*Char)                    +
+                        Len(6)                         +
+                        PmtCtl(P0002) +
+                        Prompt('Pin to verify')
+
+             Parm       Kwd(Pass)                      +
+                        Type(*Char)                    +
+                        Len(1)                         +
+                        RtnVal(*Yes)                   +
+                        PmtCtl(P0002)                  +
+                        Prompt('CL var for PASS (0 1)    (1)')
+
+ P0001:      PmtCtl     Ctl( Action ) Cond(( *EQ '*GENSECRET' ))
+
+             Dep        Ctl( &Action *EQ '*GENSECRET' )              +
+                        Parm(SECRETRTN)
+
+             Dep        Ctl( &Action *EQ '*GENSECRET' )              +
+                        Parm(( SECRET ) ( PIN ) ( PASS ))            +
+                        NbrTrue( *EQ  0 )
+
+ P0002:      PmtCtl     Ctl(Action) Cond((*EQ '*VERIFYPIN'))
+
+             Dep        Ctl(&Action *EQ *VERIFYPIN)                  +
+                        Parm(SECRET PIN PASS)
+
+             Dep        Ctl( &Action *EQ '*VERIFYPIN' )              +
+                        Parm(( SECRETRTN ))                          +
+                        NbrTrue( *EQ  0 )

@@ -1,0 +1,351 @@
+     **
+     **  Program . . : Base32OtpR
+     **  Description : One Time Password Secret generated and
+     **                One Time Password Pin    verify
+     **
+     **  Author  . . : Vengoal Chang
+     **  Date  . . . : 2022/12/27
+     **
+     **
+     **  Program summary
+     **  ---------------
+     **
+     **  Service API usage:
+     **    Base              Base32 encode and decode module from
+     **
+     **    Qc3GenPRNs        Generate pseudorandom numbers
+     **
+     **    Qc3CalculateHMAC  Uses a one-way hash function and a secret
+     **                      shared key to produce an authentication value.
+     **
+     **
+     **  Compile options:
+     **    1. CrtRpgMod Module( Base )
+     **                 Srcfile( lib/QRPGLESRC )
+     **
+     **    2. CrtRpgMod Module( Base32OtpR )
+     **                 Srcfile( lib/QRPGLESRC )
+     **
+     **    3. CrtPgm Pgm( Base32OtpR )
+     **              Module( Base32OtpR Base )
+     **
+     **
+     **---------------------------------------------------------------------
+     ** Generate OTP Secret:
+     **---------------------------------------------------------------------
+     **                       Qc3GenPRNs API
+     **              Generate pseudorandom numbers
+     **                           ||
+     **                           \/
+     ** Random Nbr   =x'59E873A1D13A1EDB857758D891807F2B5303C8D7';
+     **                           ||
+     **                           \/
+     **                       Base32encode
+     **                           ||
+     **                           \/
+     ** OtpSecret    = 'LHUHHIORHIPNXBLXLDMJDAD7FNJQHSGX';
+     **
+     **---------------------------------------------------------------------
+     ** Verify OTP Pin:
+     **---------------------------------------------------------------------
+     ** OtpSecret    = 'LHUHHIORHIPNXBLXLDMJDAD7FNJQHSGX';
+     **                           ||
+     **                           \/
+     **                       Base32decode
+     **                           ||
+     **                           \/
+     ** Random Nbr   =x'59E873A1D13A1EDB857758D891807F2B5303C8D7';
+     **                    as key ||
+     **             EPOCH current || as data to hash
+     **                           \/
+     **                    Qc3CalculateHMAC API
+     **                           ||
+     **                           \/
+     **                Bytes shift left processing
+     **                           ||
+     **                           \/
+     **           divide 1000000 to get 6 digits as PIN
+     **            compare PIN caculated with input PIN
+     **---------------------------------------------------------------------
+     **-- Header specifications:  --------------------------------------------**
+     H Debug  Option(*Srcstmt:*NoDebugIO)
+
+      /copy twofa,base_p                         ‚Base64/32/16 encoding functions
+
+     D main            Pr                  ExtPgm('BASE32OTPR')
+     D  Action                       10
+     D  SecretRtn                    32
+     D  Secret                       32    Options( *NoPass )
+     D  Pin                           6    Options( *NoPass )
+     D  Pass                          1    Options( *NoPass )
+     D
+     D main            Pi
+     D  Action                       10
+     D  SecretRtn                    32
+     D  Secret                       32    Options( *NoPass )
+     D  Pin                           6    Options( *NoPass )
+     D  Pass                          1    Options( *NoPass )
+
+     D OtpSecret       S             32
+     D OtpSecretLen    S             10U 0
+     D KeyBin          S             32
+     D KeyBinSize      S             10U 0 Inz(%Size(KeyBin))
+     D KeyBinLen       S             10U 0
+
+     D unixTime        PR            20I 0 extproc('time')
+     D  p_CurrTime                     *
+
+     D p_CurrTime      S               *
+      * the number of seconds that have elapsed since EPOCH
+     D NbrSecsDs       Ds
+     D  NbrSecs                      20U 0
+     D CurrStepDS      Ds
+     D  CurrStep                     20U 0
+     D PrevStepDS      Ds
+     D  PrevStep                     20U 0
+
+     D lastByte        S              1
+
+     D offsetDs        Ds
+     D  offsetC                       1
+     D  offset                        3I 0 Overlay(offsetC)
+
+     D ToNbrDs         Ds
+     D  NbrC                          1
+     D  Nbr                           3U 0 Overlay(NbrC)
+
+     D offset1Ch       S              1
+     D offset2Ch       S              1
+     D offset3Ch       S              1
+     D offset4Ch       S              1
+
+     D ResultDs        Ds
+     D  ResultC                       4    Dim(5)
+     D  ResultN                      10U 0 Overlay(ResultC )
+      * 2 ** 24
+     D Pow224          S             10U 0 Inz(16777216)
+      * 2 ** 16
+     D Pow216          S             10U 0 Inz(65536)
+      * 2 **  8
+     D Pow208          S             10U 0 Inz(256)
+     D Rem             S             10U 0
+     D RemCurr         S             10U 0
+     D RemPrev         S             10U 0
+
+     D pinDs           Ds
+     D  pinNbrC                       6    Dim(2)
+     D  pinNbr                        6S 0 Overlay(pinNbrC)
+
+      *-------------hash parms----------------
+     d binaryHMAC      s             32a
+     d SHA_1           c                   const(2)
+     D DataLen         s             10U 0
+     d dataToHash      s            256a
+     d $hex            s             64a
+     d Nullfield       s            100a
+     d MySalt          s             64a
+     D SaltLen         s             10u 0
+      *---------------------------------------------------------------------
+      * Stand Alone Fields - BOTTOM
+      *---------------------------------------------------------------------
+     D ErrorCode       DS                  qualified
+     D    bytesProv                  10i 0 inz(0)
+     D    bytesAvail                 10i 0 inz(0)
+
+     D WsErrorCode     DS                  qualified
+     D    bytesProv                  10i 0 inz(0)
+     D    bytesAvail                 10i 0 inz(0)
+
+     D my_key          DS                  qualified
+     D    Type                       10i 0 inz(SHA_1)
+     D    Len                        10i 0
+     D    Fmt                         1a   inz('0')
+     D                                3a
+     D    Value                      64a
+
+     d cvthc           PR                  ExtProc('cvthc')
+     d   target                   65534A   options(*varsize)
+     d   src_bits                 32767A   options(*varsize) const
+     d   tgt_length                  10I 0 value
+
+     D GetHMAC         PR                  ExtProc('Qc3CalculateHMAC')
+     D  datatohash                  256a   const options(*varsize)
+     D  pinDataLen                   10i 0 const
+     D  pinFormat                     8a   const
+     D  palgDesc                     10i 0 const
+     D  palgDescFmt                   8a   const
+     D  pkeyDesc                  32767a   const options(*varsize)
+     D  pkeyDescFmt                   8a   const
+     D  pcryptoProv                   1a   const
+     D  pcryptoDev                   10a   const
+     D  pHMAC                        64a         options(*varsize)
+     D  pErrorCode                32767a         options(*varsize)
+
+     **-- API error data structure:
+     D ERRC0100        Ds                  Qualified
+     D  BytPrv                       10i 0 Inz( %Size( ERRC0100 ))
+     D  BytAvl                       10i 0
+     D  MsgId                         7a
+     D                                1a
+     D  MsgDta                     1024a
+
+     **-- Global constants:
+     D PRN_REAL        c                   '0'
+     D PRN_TEST        c                   '1'
+     **
+     D PAR_NOT         c                   '0'
+     D PAR_ODD         c                   '1'
+     D PAR_EVEN        c                   '2'
+     **
+     D NULL            c                   ''
+     **
+     **-- Generate pseudorandom numbers:
+     D GenPRndNbr      Pr                  ExtProc( 'Qc3GenPRNs' )
+     D  PrnDta                     1024a          Options( *VarSize )
+     D  PrnDtaLen                    10i 0 Const
+     D  PrnTyp                        1a   Const
+     D  PrnPar                        1a   Const
+     D  Error                     32767a          Options( *VarSize )
+
+     D PrnDta          Ds           128
+     D  Key                          20    Overlay(PrnDta)
+
+     D PrnDtaLen       S             10I 0
+     D SecretTemp      S             64
+
+      /FREE
+
+       Select;
+       When  Action = '*GENSECRET';
+         PrnDtaLen = 20;
+         PrnDta = GenRndNbr( PrnDtaLen );
+         base32_encode( %addr(Key): 20: %addr(SecretTemp): 64);
+         SecretRtn = SecretTemp;
+         Dsply SecretRtn;
+
+       When  Action = '*VERIFYPIN';
+         NbrSecs = unixTime(p_CurrTime);
+         CurrStep= NbrSecs / 30        ;
+         PrevStep= CurrStep - 1        ;
+
+         OtpSecret    = Secret;
+         OtpSecretLen = %Size(OtpSecret);
+
+         KeyBinLen = base32_decode( %Addr(OtpSecret) :
+                                    OtpSecretLen     :
+                                    %Addr(KeyBin)    :
+                                    KeyBinSize       );
+
+        //---------------------------------------------------------
+        //            Calculate the SHA-1   HMAC hash
+        //---------------------------------------------------------
+
+          Nullfield = *allx'00';
+
+          my_key.value = %SubSt(KeyBin: 1 : KeyBinLen) + Nullfield;
+
+          my_key.len   = KeyBinLen;
+
+          DataToHash   = CurrStepDS;
+          DataLen      = %Size(CurrStepDS);
+          Exsr  GetHMACrtn;
+          pinNbr(1) = Rem;
+
+          DataToHash   = PrevStepDS;
+          DataLen      = %Size(PrevStepDS);
+          Exsr  GetHMACrtn;
+          RemPrev = Rem;
+          pinNbr(2) = Rem;
+
+          dsply pinNbrC(1);
+          dsply pinNbrC(2);
+
+          Pass = '0';
+          If (pinNbrC(1) = Pin or pinNbrC(2) = Pin);
+            Pass = '1';
+          EndIf;
+        //dump;
+        EndSl;
+
+
+        *InLr = *On;
+        return;
+
+      ** Generate HMAC
+        BegSr GetHMACrtn;
+        monitor;
+              GetHMAC( DataToHash
+                          : DataLen
+                          : 'DATA0100'
+                          : SHA_1
+                          : 'ALGD0500'
+                          :  my_key
+                          : 'KEYD0200'
+                          : '0'
+                          : *blanks
+                          : binaryHMAC
+                          : ErrorCode );
+        on-error;
+          WsErrorCode = ErrorCode;
+          Dsply 'Error in Conversion';
+        endmon;
+
+        cvthc( $hex: binaryHMAC: %len(binaryHMAC)*2);
+        //review the dump spool file to see HMAC in $hex parm
+
+        lastByte = %Subst(binaryHMAC : 20 : 1);
+        offsetC  = %BitAnd(lastByte  : x'0F');
+
+        offset1Ch= %BitAnd(%SubSt(binaryHMAC : offset+1 : 1) : x'7F');
+        NbrC     = offset1Ch;
+        ResultN(1) = Nbr    * Pow224;
+
+        offset2Ch= %BitAnd(%SubSt(binaryHMAC : offset+2 : 1) : x'FF');
+        NbrC     = offset2Ch;
+        ResultN(2) = Nbr    * Pow216;
+
+        offset3Ch= %BitAnd(%SubSt(binaryHMAC : offset+3 : 1) : x'FF');
+        NbrC     = offset3Ch;
+        ResultN(3) = Nbr    * Pow208;
+
+        offset4Ch= %BitAnd(%SubSt(binaryHMAC : offset+4 : 1) : x'FF');
+        NbrC     = offset4Ch;
+        ResultN(4) = Nbr            ;
+
+        ResultC(5) = %BitOr(ResultC(1) :
+                            ResultC(2) :
+                            ResultC(3) :
+                            ResultC(4) );
+
+        REM = %REM(ResultN(5) : 1000000);
+        EndSr;
+      /end-free
+
+      ** Generate pseudorandom numbers
+     P GenRndNbr       B
+     D                 Pi           128a   Varying
+     D  PxBinLen                     10i 0 Const
+
+     **-- Local declarations
+     D BinStream       s            128a
+
+      /Free
+
+        GenPRndNbr( BinStream
+                  : PxBinLen
+                  : PRN_REAL
+                  : PAR_NOT
+                  : ERRC0100
+                  );
+
+        If  ERRC0100.BytAvl > *Zero;
+          Dump;
+          Return  NULL;
+
+        Else;
+          Return  %Subst( BinStream: 1: PxBinLen );
+        EndIf;
+
+      /End-Free
+
+     P GenRndNbr       E

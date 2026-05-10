@@ -1,0 +1,12 @@
+     A          R QRCODER
+     A
+     A            FIELD7       512A    12 12BARCODE(QRCODE 1 *HRZ +
+     A                                      X'02' (*WIDTH .05) (*SWIDTH 1.5) +
+     A                                      (*QRCODE 4 1 *CONVERT(1) +
+     A                                      *TRIM *UCCEAN))
+     A
+     A
+     A
+     A
+     A
+     A

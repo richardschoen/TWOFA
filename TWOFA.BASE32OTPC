@@ -1,0 +1,75 @@
+/*-------------------------------------------------------------------*/
+/*                                                                   */
+/*  Program . . : BASE32OTP                                          */
+/*  Description : Generate OTP base32 secret or verify Pin           */
+/*  Author  . . : Vengoal Chang                                      */
+/*  Published . : AS400ePaper                                        */
+/*  Date  . . . : December 28, 2022                                  */
+/*                                                                   */
+/*  Program function:  BASE32OTP command processing program          */
+/*                                                                   */
+/*                                                                   */
+/*  Program summary                                                  */
+/*  ---------------                                                  */
+/*                                                                   */
+/*                                                                   */
+/*  Programmer's notes:                                              */
+/*                                                                   */
+/*                                                                   */
+/*  Compile options:                                                 */
+/*    CrtClPgm   Pgm( BASE32OTP )                                    */
+/*               SrcFile( QCLSRC )                                   */
+/*               SrcMbr( *PGM )                                      */
+/*                                                                   */
+/*-------------------------------------------------------------------*/
+     Pgm      ( &Action                +
+                &SecretRtn             +
+                &Secret                +
+                &Pin                   +
+                &Pass                  +
+              )
+
+/*-- Parameters:  ---------------------------------------------------*/
+     Dcl        &Action      *Char    10
+     Dcl        &SecretRtn   *Char    32
+     Dcl        &tmpDummy    *Char    32
+     Dcl        &Secret      *Char    32
+     Dcl        &Pin         *Char     6
+     Dcl        &Pass        *Char     1
+
+/*-- Global error monitoring:  --------------------------------------*/
+     MonMsg     CPF0000      *N        GoTo Error
+
+     If        (&Action *EQ  '*GENSECRET') Do
+     Call       Base32OtpR  ( &Action            +
+                              &SecretRtn         +
+                            )
+     EndDo
+     Else                                 Do
+     Call       Base32OtpR  ( &Action            +
+                              &tmpDummy          +
+                              &Secret            +
+                              &Pin               +
+                              &Pass              +
+                            )
+  EndDo
+
+ Return:
+     Return
+
+/*-- Error handling:  -----------------------------------------------*/
+ Error:
+     Call      QMHMOVPM    ( '    '                                  +
+                             '*DIAG'                                 +
+                             x'00000001'                             +
+                             '*PGMBDY'                               +
+                             x'00000001'                             +
+                             x'0000000800000000'                     +
+                           )
+
+     Call      QMHRSNEM    ( '    '                                  +
+                             x'0000000800000000'                     +
+                           )
+
+ EndPgm:
+     EndPgm

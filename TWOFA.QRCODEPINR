@@ -1,0 +1,26 @@
+     H DEBUG  OPTION(*SRCSTMT:*NODEBUGIO)
+
+     FQRcodeprtfO    E             Printer
+
+     D company         S             52
+     D email           S             52
+     D secret          S             32
+     D issuer          S             52
+     D url             S           2056
+
+     C     *entry        Plist
+     C                   Parm                    company
+     C                   Parm                    email
+     C                   Parm                    secret
+     C                   Parm                    issuer
+
+      /free
+
+       *InLr = *On;
+
+       url = 'otpauth://totp/' + %trim(company) + ':'
+                               + %trim(email)   + '?secret='
+                               + %trim(secret)  + '&issuer='
+                               + %trim(issuer);
+       Field7 = url      ;
+       write Qrcoder;

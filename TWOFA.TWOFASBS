@@ -1,0 +1,55 @@
+PGM  ( &TgtLib )
+     Dcl        &TgtLib         *Char    10
+     Dcl        &Lib            *Char    10  'TWOFA'
+     Dcl        &WrkStnNam      *Char    10  'TWOFA*'
+     Dcl        &RqsDta         *Char   100
+
+     ChgVar     &Lib       &TgtLib
+
+     ChkObj     &Lib       *Lib
+     MonMsg     Cpf9801    *N   Do
+     CrtLib     &Lib
+     EndDo
+
+     DltObj     &Lib       *Sbsd
+     MonMsg     Cpf0000
+     CrtSbsD    SbsD(&Lib/&Lib)                  +
+                Pools((1 *Base) (2 *Interact))   +
+                SgnDspf(&Lib/SIGNON2FA)
+
+     ChkObj     &Lib       *JobQ
+     MonMsg     Cpf9801    *N   Do
+     CrtJobQ    JobQ(&Lib/&Lib)
+     EndDo
+
+     AddJobQE   SbsD(&Lib/&Lib)                  +
+                JobQ(&Lib/&Lib)                  +
+                MaxAct(*NoMax)                   +
+                SeqNbr(10)
+
+     AddRtgE    Sbsd(&Lib/&Lib)                  +
+                SeqNbr(9999)                     +
+                CmpVal(*ANY)                     +
+                Pgm(QSYS/QCMD)                   +
+                Cls(QGPL/QINTER)                 +
+                PoolId(2)
+
+     ChgVar     &RqsDta   ('CALL ' *Cat          +
+                           &Lib    *TCat '/' *Cat +
+                           'TWOFAC'              +
+                          )
+     DltObj     &Lib       *Jobd
+     Monmsg     Cpf0000
+     CrtJobD    Jobd(&Lib/&Lib)                  +
+                User(QPGMR)                      +
+                RqsDta(&RqsDta)                  +
+                InlLibL(&Lib  QGPL QTEMP)        +
+                Text('TWOFA subsystem auto start jobd')
+
+     AddAjE     Sbsd(&Lib/&Lib)                  +
+                Job(&Lib)                        +
+                JobD(&Lib/&Lib)
+
+     AddWse     Sbsd(&Lib/&Lib)                  +
+                WrkStn(&WrkStnNam)
+ENDPGM

@@ -1,0 +1,66 @@
+PGM
+
+   Dcl        &SrcLib    *Char     10    'TWOFA'
+   Dcl        &TgtLib    *Char     10    'TWOFA'
+   Dcl        &SrcFile   *Char     10    'TWOFA'
+
+   ChkObj     &TgtLib    *Lib
+   Monmsg     Cpf9801    *N        Do
+   CrtLib     &TgtLib
+   EndDo
+
+   AddLibLE   &TgtLib
+   MonMsg     Cpf0000
+
+   CrtDspf    File(&TgtLib/Signon2FA)              +
+              SrcFile(&SrcLib/&SrcFile)            +
+              SrcMbr(Signon2FA)                    +
+              MaxDev(256)
+
+   ChkObj     Obj(&TgtLib/TWOFAPF)                 +
+              ObjType(*FILE)
+   MonMsg     CPF9801       *N    Do
+   CrtPf      File(&TgtLib/TWOFAPF)                +
+              SrcFile(&SrcLib/&SrcFile)
+   EndDo
+   ChgPf      File(&TgtLib/TWOFAPF)                +
+              SrcFile(&SrcLib/&SrcFile)            +
+              SrcMbr(TWOFAPF)                      +
+
+   CrtBndRpg  Pgm(&TgtLib/TWOFAINITR)              +
+              SrcFile(&SrcLib/&SrcFile)
+
+   CrtRpgMod  Module( BASE )                       +
+              SrcFile( &SrcLib/&SrcFile )          +
+
+   CrtRpgMod  Module( BASE32OTPR )                 +
+              SrcFile( &SrcLib/&SrcFile )
+
+   CrtPgm     Pgm( &TgtLib/BASE32OTPR )            +
+              Module( Base32OtpR Base )
+
+   CrtClPgm   Pgm( &TgtLib/BASE32OTPC )            +
+              SrcFile(&SrcLib/&SrcFile)
+
+   CrtCmd     Cmd( &TgtLib/BASE32OTP )              +
+              Pgm( &TgtLib/BASE32OTPC )             +
+              SrcFile(&TgtLib/&SrcFile)             +
+              Allow( *IPGM *BPGM )
+
+   CrtClPgm   Pgm(&TgtLib/TWOFAINITC)              +
+              SrcFile(&SrcLib/&SrcFile)
+
+   CrtClPgm   Pgm(&TgtLib/TWOFASBS)                +
+              SrcFile(&SrcLib/&SrcFile)
+
+   CrtClPgm   Pgm(&TgtLib/TWOFASETC)               +
+              SrcFile(&SrcLib/&SrcFile)
+
+   CrtCmd     Cmd(&TgtLib/TWOFASET)                +
+              Pgm(&TgtLib/TWOFASETC)               +
+              SrcFile(&TgtLib/&SrcFile)
+
+/* Create TWOFA subsystem */
+   Call       &TgtLib/TWOFASBS  &TgtLib
+
+ENDPGM

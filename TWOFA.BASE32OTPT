@@ -1,0 +1,22 @@
+PGM
+
+  Dcl        &Action      *Char  10
+  Dcl        &SecretRtn   *Char  32
+  Dcl        &Secret      *Char  32
+  Dcl        &Pin         *Char   6
+  Dcl        &Pass        *Char   1
+
+  BASE32OTP  ACTION(*GENSECRET) SECRETRTN(&SECRETRTN)
+  SNDPGMMSG  MSGID(CPF9898) MSGF(QCPFMSG)             +
+                            MSGDTA('New Secret is' *BCAT &SecretRtn)
+  DMPCLPGM
+
+  BASE32OTP  ACTION(*VERIFYPIN) +
+             SECRET(LHUHHIORHIPNXBLXLDMJDAD7FNJQHSGX) +
+             PIN(040111) PASS(&PASS)
+  SNDPGMMSG  MSGID(CPF9898) MSGF(QCPFMSG)             +
+                            MSGDTA('PIN result is' *BCAT &PASS)
+
+  Return
+
+ENDPGM

@@ -1,0 +1,65 @@
+/*-------------------------------------------------------------------*/
+/*-------------------------------------------------------------------*/
+
+     Pgm  ( &UsrPrf &Remove)
+
+/*-- Parameters:  ---------------------------------------------------*/
+     Dcl        &UsrPrf      *Char    10
+     Dcl        &Remove      *Char     4
+     Dcl        &TwoFALib    *Char    10    'TWOFA'
+     Dcl        &Action      *Char  10
+     Dcl        &SecretRtn   *Char  32
+     Dcl        &Secret      *Char  32
+     Dcl        &WrkStn      *Char  10
+     Dcl        &Check       *Char   1
+     Dcl        &LmtWrkStn   *Char   1
+
+/*-- Global error monitoring:  --------------------------------------*/
+     MonMsg     CPF0000      *N        GoTo Error
+
+     AddLibLe   &TwoFaLib
+     Monmsg     Cpf0000
+
+     ChkObj     &UsrPrf        *UsrPrf
+
+     If       ( &Remove *EQ '*NO' ) Do
+     Base32Otp  Action(*GENSECRET) SecretRtn(&SECRETRTN)
+     ChgVar     &Secret        &SecretRtn
+     Call       TwoFaINITR   ( '*PUTKEY'          +
+                               &UsrPrf            +
+                               &Secret            +
+                               &WrkStn            +
+                               &Check             +
+                               &LmtWrkStn )
+     EndDo
+
+     If       ( &Remove *EQ '*YES' ) Do
+     Call       TwoFaINITR   ( '*DLTUSR'          +
+                               &UsrPrf            +
+                               &Secret            +
+                               &WrkStn            +
+                               &Check             +
+                               &LmtWrkStn )
+     EndDo
+
+ Return:
+     Return
+
+/*-- Error handling:  -----------------------------------------------*/
+ Error:
+     DspJobLog  OUTPUT(*PRINT)
+
+     Call       QMHMOVPM    ( '    '                                  +
+                              '*DIAG'                                 +
+                              x'00000001'                             +
+                              '*PGMBDY'                               +
+                              x'00000001'                             +
+                              x'0000000800000000'                     +
+                            )
+
+     Call       QMHRSNEM    ( '    '                                  +
+                              x'0000000800000000'                     +
+                            )
+
+ EndPgm:
+     EndPgm
