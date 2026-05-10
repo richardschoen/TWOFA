@@ -10,9 +10,9 @@ For IBM i OS V7R2 above.
             MINADJ(1000)
             MAXADJ(1)
             ADJTHLD(*MAXADJ) 
-            ACTLOG(*POLL)</pre>
-  - ENDTCPSVR SERVER(*NTP)
-  - STRTCPSVR SERVER(*NTP)
+            ACTLOG(*POLL)
+    ENDTCPSVR SERVER(*NTP)
+    STRTCPSVR SERVER(*NTP)</pre>
 + Create library file - CRTLIB TWOFA
 + Add library TWOFA to library list - ADDLIBLE TWOFA
 + Create source file - CRTSRCPF TWOFA/TWOFA
