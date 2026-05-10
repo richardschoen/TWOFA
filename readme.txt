@@ -11,6 +11,7 @@ Opt  Member      Type        Text
      QRCODEPINR  RPGLE       create qrcode PIN PDF                             
      QRCODEPRTF  PRTF        crtprtf DEVT(*AFPDS)                              
      SIGNON2FA   DSPF        2FA SignOn Display                                
+     TWOFAC      CLP         2FA auto start jobD program                       
      TWOFAINITC  CLP         2FA INIT PGM                                      
      TWOFAINITR  RPGLE       2FA                                               
      TWOFAPF     PF          2FA USER + SECRET + WRKSTN + CHECK                
