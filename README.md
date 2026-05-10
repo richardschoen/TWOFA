@@ -18,7 +18,7 @@ For IBM i OS V7R2 above.
   - Default only limit workstation device name TWOFA for demo usage. You can use command ADDWSE to add other workstation (for example TWOFA*) to subsystem TWOFA.<br>And those subsystem workstation name need to be same as Client workstation name on 5250 Emulator setting. <br>
 
 + Reference:
-  - TOTPC https://gist.github.com/syzdek/eba233ca33e1b5a45a99
+  - totp.c  -  https://gist.github.com/syzdek/eba233ca33e1b5a45a99
 
   
   
