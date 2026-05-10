@@ -28,9 +28,11 @@ For IBM i OS V7R2 above.
 + Compile source member INSTALL2FA <br>CRTCLPGM PGM(TWOFA/INSTALL2FA) SRCFILE(TWOFA/TWOFA) SRCMBR(INSTALL2FA)
 + Create all programs, commands, signon display file, physical file and subsystem TWOFA - Call TWOFA/INSTALL2FA
 + Usage:
-  - Install Google Authenticator on your phone 
+  - Install Google Authenticator APP on your phone 
   - Start subsystem - STRSBS SBSD(TWOFA/TWOFA)<br> Add this command to your auto startup program to auto start subsystem after IPL.
-  - Add 2FA user<br> excute command TWOFASET USER(2fauser)
+  - Add 2FA user<br>
+    + excute command TWOFASET USER(2fauser)
+    + Get TOTP key from file TWOFAPF and set the totp key on Google Authenticator APP.
     + Default only add or replace TOTP key to user, no workstation name limit control.<br> If you want limit user and workstation at th same time, Use SQL to update workstation name after add 2FA user.<br> Reference PF TWOFAPF for field description.
   - Remove 2FA user<br> excute command TWOFASET USER(2fauser) REMOVE(*YES)
   - Default only limit workstation device name TWOFA for demo usage. You can use command ADDWSE to add other workstation (for example TWOFA*) to subsystem TWOFA.<br>And those subsystem workstation name need to be same as Client workstation name on 5250 Emulator setting. <br>
