@@ -3,10 +3,10 @@ TWOFA - A 2FA Two-Factor Authentication solution 100% native to the IBM i
 
 For IBM i OS V7R2 above.
 
-+ Configure NTP client
-  - CHGNTPA RMTSYS('time server host name or IP') AUTOSTART(*YES) 
++ Configure NTP service
+  - <code>CHGNTPA RMTSYS('time server host name or IP') AUTOSTART(*YES) 
      POLLITV(1) MINADJ(1000) MAXADJ(1) ADJTHLD(*MAXADJ) 
-     ACTLOG(*POLL)
+     ACTLOG(*POLL)</code>
   - ENDTCPSVR SERVER(*NTP)
   - STRTCPSVR SERVER(*NTP)
 + Create library file - CRTLIB TWOFA
