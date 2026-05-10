@@ -14,5 +14,9 @@ TWOFA - A 2FA Two-Factor Authentication solution 100% native to the IBM i
   - Add 2FA user<br> excute command TWOFASET USER(2fauser) <br> Default only add or replace TOTP key to user, no workstation name limit control.<br> If you want limit user and workstation at th same time, Use SQL to update workstation name after add 2FA user.<br> Reference PF TWOFAPF for field description.
   - Remove 2FA user<br> excute command TWOFASET USER(2fauser) REMOVE(*YES)
   - Default only limit workstation device name TWOFA for demo usage. You can use command ADDWSE to add other workstation (for example TWOFA*) to subsystem TWOFA.<br>And those subsystem workstation name need to be same as Client workstation name on 5250 Emulator setting. <br>
+
++ Reference:
+  - https://gist.github.com/syzdek/eba233ca33e1b5a45a99
+  - https://www.midlandinfosys.com/ibm-i-2fa-two-factor-authentication-faq
   
   
