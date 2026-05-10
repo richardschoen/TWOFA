@@ -1,6 +1,8 @@
 # TWOFA
 TWOFA - A 2FA Two-Factor Authentication solution 100% native to the IBM i
 
+For IBM i OS V7R2 above.
+
 + Create library file - CRTLIB TWOFA
 + Add library TWOFA to library list - ADDLIBLE TWOFA
 + Create source file - CRTSRCPF TWOFA/TWOFA
