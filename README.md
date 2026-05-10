@@ -5,7 +5,7 @@ TWOFA - A 2FA Two-Factor Authentication solution 100% native to the IBM i
 + Add library TWOFA to library list - ADDLIBLE TWOFA
 + Create source file - CRTSRCPF TWOFA/TWOFA
 + Upload all members to source file TWOFA<br>Change member type same as [readme.txt](https://github.com/vengoal/TWOFA/blob/main/readme.txt).
-+ Compile source member INSTALL2FA - CRTCLPGM PGM(TWOFA/INSTALL2FA) SRCFILE(TWOFA/TWOFA) SRCMBR(INSTALL2FA)
++ Compile source member INSTALL2FA - <br>CRTCLPGM PGM(TWOFA/INSTALL2FA) SRCFILE(TWOFA/TWOFA) SRCMBR(INSTALL2FA)
 + Create all programs, commands, signon display file, physical file and subsystem TWOFA - Call TWOFA/INSTALL2FA
 + Usage:
   - Start subsystem - STRSBS SBSD(TWOFA/TWOFA)<br> Add this command to your auto startup program to auto start subsystem after IPL.
