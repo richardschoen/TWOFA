@@ -33,6 +33,11 @@ For IBM i OS V7R2 above.
   - Add 2FA user<br>
     + excute command TWOFASET USER(2fauser)
     + Use SQL select statement to get totp key from file TWOFAPF and set the totp key on Google Authenticator APP.
+    + Create user TOTP key QR code for Google Authenticator add user setting.
+      - CRTPRTF PRTF(TWOFA/QRCODEPRTF) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPRTF)
+      - CRTBNDRPG PGM(TWOFA/QRCODEPINR) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPINR)
+      - CRTCLPGM  PGM(TWOFA/QRCODEPINC) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPINC)
+      - CAll PGM(TWOFA/QRCODEPINC) Parm( '2fauser' '2fauser_email' 'totpkey' ) \ parameters description: \2fauser and totpkeyvaluse from file TWOFAPF.\ 2fauser_email @company.com 
     + Default only add or replace TOTP key to user, no workstation name limit control.<br> If you want limit user and workstation at th same time, Use SQL to update workstation name after add 2FA user.<br> Reference PF TWOFAPF for field description.
   - Remove 2FA user<br> excute command TWOFASET USER(2fauser) REMOVE(*YES)
   - Default only limit workstation device name TWOFA for demo usage. You can use command ADDWSE to add other workstation (for example TWOFA*) to subsystem TWOFA.<br>And those subsystem workstation name need to be same as Client workstation name on 5250 Emulator setting. <br>
