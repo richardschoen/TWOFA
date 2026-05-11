@@ -38,7 +38,8 @@ For IBM i OS V7R2 above.
       - CRTBNDRPG PGM(TWOFA/QRCODEPINR) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPINR)
       - CRTCLPGM  PGM(TWOFA/QRCODEPINC) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPINC)
       - CAll PGM(TWOFA/QRCODEPINC) Parm( '2fauser' '2fauser_email' 'totpkey' ) <br /><pre>
-      parameters description: 2fauser and totpkeyvaluse from file TWOFAPF.
+      parameters description:
+      2fauser and totpkeyvaluse from file TWOFAPF.
       2fauser_email @company.com</pre> 
     + Default only add or replace TOTP key to user, no workstation name limit control.<br> If you want limit user and workstation at th same time, Use SQL to update workstation name after add 2FA user.<br> Reference PF TWOFAPF for field description.
   - Remove 2FA user<br> excute command TWOFASET USER(2fauser) REMOVE(*YES)
