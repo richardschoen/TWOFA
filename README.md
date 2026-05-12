@@ -41,8 +41,8 @@ For IBM i OS V7R2 above.
         - Parameters description:
              Get 2fauser and totpkey value from file TWOFAPF.
              2fauser_email 2fauser email
-          2fauser's QR code pdf file locate at '/home/twofauser/2fauser.pdf.
-      - Use command [SNDSMTPEMM](https://www.ibm.com/docs/en/i/7.6.0?topic=ssw_ibm_i_76/cl/sndsmtpemm.html) send 2fauser QR code to user, >br />then user use Google Authenticator scan QR code to generate PIN Code for IBM i (AS/400).
+          2fauser's QR code pdf file locate at '/home/twofauser/2fauser.pdf.</pre> 
+      - Use command [SNDSMTPEMM](https://www.ibm.com/docs/en/i/7.6.0?topic=ssw_ibm_i_76/cl/sndsmtpemm.html) send 2fauser QR code to user, <br />then user use Google Authenticator scan QR code to generate PIN Code for IBM i (AS/400).
         <pre>
           SNDSMTPEMM RCP((mailbox1@domain *PRI))
            SUBJECT(some subject) NOTE(some note)
