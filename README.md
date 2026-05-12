@@ -37,7 +37,8 @@ For IBM i OS V7R2 above.
       - CRTPRTF PRTF(TWOFA/QRCODEPRTF) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPRTF)
       - CRTBNDRPG PGM(TWOFA/QRCODEPINR) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPINR)
       - CRTCLPGM  PGM(TWOFA/QRCODEPINC) SRCFILE(TWOFA/TWOFA) SRCMBR(QRCODEPINC)
-      - CAll PGM(TWOFA/QRCODEPINC) Parm( '2fauser' '2fauser_email' 'totpkey' ) <br /><pre>
+      - CAll PGM(TWOFA/QRCODEPINC) Parm( '2fauser' '2fauser_email' 'totpkey' )
+        <pre>
         - Parameters description:
              Get 2fauser and totpkey value from file TWOFAPF.
              2fauser_email 2fauser email
