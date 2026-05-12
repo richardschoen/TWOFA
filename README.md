@@ -40,7 +40,14 @@ For IBM i OS V7R2 above.
       - CAll PGM(TWOFA/QRCODEPINC) Parm( '2fauser' '2fauser_email' 'totpkey' ) <br /><pre>
         - Parameters description:
              Get 2fauser and totpkey value from file TWOFAPF.
-             2fauser_email 2fauser email</pre> 
+             2fauser_email 2fauser email
+          2fauser's QR code pdf file locate at '/home/twofauser/2fauser.pdf.
+      - USe command [SNDSMTPEMM](https://www.ibm.com/docs/en/i/7.6.0?topic=ssw_ibm_i_76/cl/sndsmtpemm.html)
+        <pre>
+          SNDSMTPEMM RCP((mailbox1@domain *PRI))
+           SUBJECT(some subject) NOTE(some note)
+           ATTACH((/home/twofauser/2fause.pdf *PDF *BIN))
+          </pre> 
     + Default only add or replace TOTP key to user, no workstation name limit control.<br> If you want limit user and workstation at th same time, Use SQL to update workstation name after add 2FA user.<br> Reference PF TWOFAPF for field description.
   - Remove 2FA user<br> excute command TWOFASET USER(2fauser) REMOVE(*YES)
   - Default only limit workstation device name TWOFA for demo usage. You can use command ADDWSE to add other workstation (for example TWOFA*) to subsystem TWOFA.<br>And those subsystem workstation name need to be same as Client workstation name on 5250 Emulator setting. <br>
